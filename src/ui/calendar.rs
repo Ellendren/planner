@@ -33,8 +33,11 @@ impl Calendar {
     // call to add this compnent to a group
     pub fn add(&mut self) {
 
-        self.wid.fixed(self.col_wid.borrow(), 100);
+        self.wid.fixed(self.col_wid.borrow(), 1000);
+        self.col_wid.set_pad(20);
+        self.col_wid.set_margin(20);
         // let day = day::DayButton::new();
+        week_label::WeekLabel(&mut self.col_wid);
 
         self.col_wid.end();
         self.wid.end();
