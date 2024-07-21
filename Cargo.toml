@@ -4,4 +4,5 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+fltk = "1.4.32"
 time = { version = "0.3.36", features = ["local-offset"] }
