@@ -1,3 +1,5 @@
+use std::fmt::Error;
+
 use fltk::{
     enums::*,
     prelude::*,
@@ -45,7 +47,9 @@ impl Week {
         new_week
     } 
 
-    pub fn add(mut self, col_id: &mut Flex) {
+    // if succesful returns the first day of either the next weel or next month
+    // whichever one commes first
+    pub fn add(mut self, col_id: &mut Flex) -> Result<Date, Error>{
         col_id.fixed(&self.wid, 100);
 
         let mut curr_weekday_date = self.start_date;
@@ -60,7 +64,7 @@ impl Week {
                         let err_msg = format!("Couldn't get next day for Date: {curr_weekday_date}");
 
                         eprint!("{}", err_msg.red());
-                        curr_weekday_date
+                        return Err(Error);
                     }
                 }
             }
@@ -70,7 +74,9 @@ impl Week {
             self.days.push(day);
         }
 
-        self.wid.end()
+        self.wid.end();
+
+        Ok(curr_weekday_date)
     }
 
 

@@ -2,6 +2,7 @@ pub mod day;
 pub mod week_label;
 pub mod week;
 pub mod week_days;
+pub mod month;
 
 use std::borrow::Borrow;
 
@@ -42,8 +43,8 @@ impl Calendar {
         
         week_label::WeekLabel(&mut self.col_wid);
 
-        let week = week::Week::new(Date::from_calendar_date(2024, Month::July, 1).unwrap());
-        week.add(&mut self.col_wid);
+        let month = month::MonthGUI::current();
+        month.add(&mut self.col_wid).unwrap();
 
         self.col_wid.end();
         self.wid.end();
