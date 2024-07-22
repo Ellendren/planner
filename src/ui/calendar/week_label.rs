@@ -4,24 +4,16 @@ use fltk::{
     group::Flex,
     text::{TextDisplay, TextBuffer},
 };
-use time::Weekday;
+use crate::ui::calendar::week_days;
 
 pub fn WeekLabel(col_id: &mut Flex) {
     let days = Flex::default().row();
 
     col_id.fixed(&days, 30);
 
-    let week = vec![
-        Weekday::Sunday,
-        Weekday::Monday,
-        Weekday::Tuesday,
-        Weekday::Wednesday,
-        Weekday::Thursday,
-        Weekday::Friday,
-        Weekday::Saturday,
-    ];
+    let days_in_week= week_days::days_in_week();
 
-    for day in week.iter() {
+    for day in days_in_week.iter() {
         let mut day_label = TextDisplay::default();
 
         day_label.set_color(Color::from_rgb(100, 80, 100));

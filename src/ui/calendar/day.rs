@@ -3,6 +3,7 @@ use fltk::{
     enums::*,
     prelude::*
 };
+use time::Date;
 use crate::calendar::day::Day;
 
 pub struct DayButton {
@@ -11,12 +12,29 @@ pub struct DayButton {
 }
 
 impl DayButton {
-    pub fn new() -> Self {
+    pub fn default() -> Self {
         let day = Day::default();
-        let weekday = day.weekday().to_string();
 
         DayButton {
-            wid: Button::default().with_label(&weekday),
+            wid: Button::default().with_label(&day.date()),
+            day: day
+        }
+    }
+
+    pub fn new(date: Date) -> Self {
+        let day = Day::new(date, Vec::new());
+
+        DayButton {
+            wid: Button::default().with_label(&day.date()),
+            day: day
+        }
+    }
+
+    pub fn new_blank(date: Date) -> Self {
+        let day = Day::new(date, Vec::new());
+
+        DayButton {
+            wid: Button::default(),
             day: day
         }
     }

@@ -1,5 +1,7 @@
 pub mod day;
 pub mod week_label;
+pub mod week;
+pub mod week_days;
 
 use std::borrow::Borrow;
 
@@ -8,6 +10,7 @@ use fltk::{
     group::Flex,
     prelude::*
 };
+use time::{Date, Month};
 
 pub struct Calendar {
     wid: Flex,
@@ -34,10 +37,13 @@ impl Calendar {
     pub fn add(&mut self) {
 
         self.wid.fixed(self.col_wid.borrow(), 1000);
-        self.col_wid.set_pad(20);
+        self.col_wid.set_pad(10);
         self.col_wid.set_margin(20);
-        // let day = day::DayButton::new();
+        
         week_label::WeekLabel(&mut self.col_wid);
+
+        let week = week::Week::new(Date::from_calendar_date(2024, Month::July, 1).unwrap());
+        week.add(&mut self.col_wid);
 
         self.col_wid.end();
         self.wid.end();
