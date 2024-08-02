@@ -2,7 +2,8 @@ use fltk::{
     enums::*,
     group::Flex,
     prelude::*,
-    widget_extends
+    widget_extends,
+    button::Button
 };
 use time::{
     Date, 
@@ -40,6 +41,12 @@ impl MonthGUI {
             } {}
         }
         wid.begin();
+        let mut row = Flex::default().row();
+        let prev_btn = MonthButton::new(MonthButtonType::Previous);
+        let next_btn = MonthButton::new(MonthButtonType::Next);
+        row.fixed(&prev_btn.wid, 100);
+        row.fixed(&next_btn.wid, 100);
+        row.end();
         wid.end();
         MonthGUI {
             wid: wid,
@@ -49,3 +56,39 @@ impl MonthGUI {
         }
     }
 }
+
+widget_extends!(MonthGUI, Flex, wid);
+
+// Buttons for MonthGUI
+enum MonthButtonType {
+    Next,
+    Previous
+}
+struct MonthButton {
+    wid: Button,
+    b_type: MonthButtonType
+}
+
+impl MonthButton {
+    fn new(b_type: MonthButtonType) -> Self {
+        let arrow;
+
+        match b_type {
+            MonthButtonType::Next => {
+                arrow = '\u{27A1}';
+            }
+            MonthButtonType::Previous => {
+                arrow = '\u{2B05}';
+            }
+        }
+
+        let label= format!("{}", arrow);
+
+        MonthButton {
+            wid: Button::default().with_label(label.as_str()),
+            b_type: b_type
+        }
+    }
+}
+
+widget_extends!(MonthButton, Button, wid);

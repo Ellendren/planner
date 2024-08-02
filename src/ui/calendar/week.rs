@@ -1,7 +1,8 @@
 use fltk::{
     enums::*,
     prelude::*,
-    group::Flex
+    group::Flex,
+    widget_extends
 };
 use time::{
     Weekday,
@@ -75,3 +76,5 @@ impl Week {
 
 
 }
+
+widget_extends!(Week, Flex, wid);
