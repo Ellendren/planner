@@ -1,24 +1,23 @@
 use fltk::{
     enums::*, 
     group::{
-        Tabs,
-        Flex
+        Flex, Tabs
     },
     prelude::{
         GroupExt, 
         MenuExt, 
         WidgetBase, 
         WidgetExt
-    }
+    }, widget_extends
 };
-use crate::ui::calendar::Calendar;
+use crate::{calendar, ui::calendar::Calendar};
 
 pub struct PlannerTab {
     wid: Tabs,
     calendar: Calendar,
 }
 
-impl  PlannerTab {
+impl PlannerTab {
     pub fn new() -> Self{
         let wid = Tabs::default_fill();
 
@@ -27,7 +26,7 @@ impl  PlannerTab {
             calendar: Calendar::new(),
         };
         
-        tab.calendar.add();
+        tab.calendar.show_month();
 
         tab.wid.end();
         tab.wid.auto_layout();
@@ -35,3 +34,5 @@ impl  PlannerTab {
         tab
     }
 }
+
+widget_extends!(PlannerTab, Tabs, wid);

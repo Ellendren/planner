@@ -2,19 +2,17 @@ pub mod day;
 pub mod week_label;
 pub mod week;
 pub mod week_days;
-
-use std::borrow::Borrow;
+pub mod month;
 
 use fltk::{
     enums::*,
     group::Flex,
-    prelude::*
+    prelude::*,
+    widget_extends
 };
-use time::{Date, Month};
 
 pub struct Calendar {
     wid: Flex,
-    col_wid: Flex,
     label: String
 }
 
@@ -26,26 +24,46 @@ impl Calendar {
             wid: Flex::default()
                 .with_label(format!("{label}\t").as_str())
                 .row(),
-            col_wid: Flex::default().column(),
             label: label.to_string()
         };
 
         cal
     }
 
-    // call to add this compnent to a group
-    pub fn add(&mut self) {
+    fn show_today(&self) {
+        day::DayButton::default();
+    }
 
-        self.wid.fixed(self.col_wid.borrow(), 1000);
-        self.col_wid.set_pad(10);
-        self.col_wid.set_margin(20);
-        
-        week_label::WeekLabel(&mut self.col_wid);
+    pub fn show_month(&mut self) {
+        let mut col = CalendarCol::default_col();
+        self.fixed(&col.wid, 1000);
 
-        let week = week::Week::new(Date::from_calendar_date(2024, Month::July, 1).unwrap());
-        week.add(&mut self.col_wid);
+        week_label::week_label(&mut col.wid);
 
-        self.col_wid.end();
-        self.wid.end();
+        let month = month::MonthGUI::default(col.wid);
     }
 }
+
+widget_extends!(Calendar, Flex, wid);
+
+
+
+// colums widge for calander tab
+struct CalendarCol {
+    wid: Flex
+}
+
+impl  CalendarCol{
+    fn default_col() -> Self{
+        let mut col = CalendarCol{
+            wid: Flex::default().column()
+        };
+
+        col.set_pad(10);
+        col.set_margin(20);
+
+        col
+    }
+}
+
+widget_extends!(CalendarCol, Flex, wid);

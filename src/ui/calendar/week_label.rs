@@ -6,7 +6,7 @@ use fltk::{
 };
 use crate::ui::calendar::week_days;
 
-pub fn WeekLabel(col_id: &mut Flex) {
+pub fn week_label(col_id: &mut Flex) {
     let days = Flex::default().row();
 
     col_id.fixed(&days, 30);

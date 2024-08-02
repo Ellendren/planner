@@ -11,7 +11,7 @@ pub fn run() -> Result<(), FltkError>{
         0, 
         0, 
         1000, 
-        550, 
+        700, 
         "Ellendren's Planner"
     )
     .center_screen();
