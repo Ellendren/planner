@@ -1,4 +1,4 @@
-use std::rc::Rc;
+use std::{borrow::BorrowMut, rc::Rc};
 use std::cell::RefCell;
 use fltk::{
     app::{self, Sender}, button::Button, enums::*, group::Flex, prelude::*, widget_extends
@@ -13,14 +13,13 @@ use crate::ui::calendar::week;
 
 enum Message {
     NextMonth,
-    PrevMnt
+    PrevMonth
 }
 
 pub struct MonthGUI {
     wid: Flex,
     month: Rc<RefCell<Month>>,
-    year: Rc<RefCell<i32>>,
-    weeks: Rc<RefCell<Vec<week::Week>>>
+    year: Rc<RefCell<i32>>
 }
 
 impl MonthGUI {
@@ -47,26 +46,53 @@ impl MonthGUI {
 
         let month = Rc::from(RefCell::from(date.month()));
         let year = Rc::from(RefCell::from(date.year()));
-        let weeks = Rc::from(RefCell::from(weeks));
 
-        let mut weeks_cl = weeks.clone();
+        let month_cb = month.clone();
+        let year_cb = year.clone();
         let (s, r) = app::channel::<Message>();
         wid.set_callback(move |wid| {
-            if let Some(Message::NextMonth) = r.recv() {
-                // add code to handle next button
+            // let weeks = weeks_cb.borrow_mut();
+            let mut new_month = *month_cb.borrow();
+            let mut new_year = *year_cb.borrow();
+
+            // handle respone
+            let response = r.recv();
+            match response {
+                Some(msg) => {
+                    match msg {
+                        Message::NextMonth => {
+                            new_month = new_month.next();
+                            month_cb.swap(&RefCell::from(new_month));
+                            if new_month == Month::January {
+                                new_year = new_year+1;
+                                year_cb.swap(&RefCell::from(new_year)); 
+                            }
+                        }
+                        Message::PrevMonth => {
+                            new_month = new_month.previous();
+                            month_cb.swap(&RefCell::from(new_month));
+                            if new_month == Month::December {
+                                new_year = new_year-1;
+                                year_cb.swap(&RefCell::from(new_year)); 
+                            }
+                        }
+                    }
+                }
+                None => {}
+            }
+
+            //update weeKs
+            let mut start_date = Date::from_calendar_date(new_year, new_month, 1).unwrap();
+            for week in weeks.iter_mut() {
+                week.change_week(start_date);
+
+                /*do*/ while {
+                    start_date = start_date.next_day().unwrap();
+                    start_date.weekday() != Weekday::Sunday
+                } {}
             }
         });
 
-        // !!!!!!!!!! guide for next prev buttons
-        // let mut day = Date::from_calendar_date(date.year(), date.month().next(), 1).unwrap();
-        // for week in weeks.iter_mut() {
-        //     week.change_week(day);
-
-        //     /*do*/ while {
-        //         day = day.next_day().unwrap();
-        //         day.weekday() != Weekday::Sunday
-        //     } {}
-        // }
         wid.begin();
         let mut row = Flex::default().row();
         row.set_callback(|row| {
@@ -82,7 +108,6 @@ impl MonthGUI {
             wid: wid,
             month: month,
             year: year,
-            weeks: weeks
         }
     }
 }
@@ -115,6 +140,10 @@ impl MonthButton {
             }
             MonthButtonType::Previous => {
                 arrow = '\u{2B05}';
+                wid.set_callback(move |but| {
+                    s.send(Message::PrevMonth);
+                    but.parent().unwrap().do_callback();
+                });
             }
         }
 

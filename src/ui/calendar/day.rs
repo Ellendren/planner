@@ -41,8 +41,6 @@ impl DayButton {
     pub fn update_day(&self, date: Date) -> Self {
         let day = Day::new(date, Vec::new());
         let wid = self.wid.clone();
-        println!("{:?}", day);
-
         DayButton {
             wid: wid.with_label(day.date().as_str()),
             day: day
