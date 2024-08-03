@@ -1,9 +1,7 @@
+use std::rc::Rc;
+use std::cell::RefCell;
 use fltk::{
-    enums::*,
-    group::Flex,
-    prelude::*,
-    widget_extends,
-    button::Button
+    app::{self, Sender}, button::Button, enums::*, group::Flex, prelude::*, widget_extends
 };
 use time::{
     Date, 
@@ -13,11 +11,16 @@ use time::{
 };
 use crate::ui::calendar::week;
 
+enum Message {
+    NextMonth,
+    PrevMnt
+}
+
 pub struct MonthGUI {
     wid: Flex,
-    month: Month,
-    year: i32,
-    weeks: Vec<week::Week>
+    month: Rc<RefCell<Month>>,
+    year: Rc<RefCell<i32>>,
+    weeks: Rc<RefCell<Vec<week::Week>>>
 }
 
 impl MonthGUI {
@@ -41,7 +44,20 @@ impl MonthGUI {
                 day.weekday() != Weekday::Sunday
             } {}
         }
-        //!!!!!!!!!! guide for next prev buttons
+
+        let month = Rc::from(RefCell::from(date.month()));
+        let year = Rc::from(RefCell::from(date.year()));
+        let weeks = Rc::from(RefCell::from(weeks));
+
+        let mut weeks_cl = weeks.clone();
+        let (s, r) = app::channel::<Message>();
+        wid.set_callback(move |wid| {
+            if let Some(Message::NextMonth) = r.recv() {
+                // add code to handle next button
+            }
+        });
+
+        // !!!!!!!!!! guide for next prev buttons
         // let mut day = Date::from_calendar_date(date.year(), date.month().next(), 1).unwrap();
         // for week in weeks.iter_mut() {
         //     week.change_week(day);
@@ -53,16 +69,19 @@ impl MonthGUI {
         // }
         wid.begin();
         let mut row = Flex::default().row();
-        let prev_btn = MonthButton::new(MonthButtonType::Previous);
-        let next_btn = MonthButton::new(MonthButtonType::Next);
+        row.set_callback(|row| {
+            row.parent().unwrap().do_callback();
+        });
+        let prev_btn = MonthButton::new(MonthButtonType::Previous, s.clone());
+        let next_btn = MonthButton::new(MonthButtonType::Next, s.clone());
         row.fixed(&prev_btn.wid, 100);
         row.fixed(&next_btn.wid, 100);
         row.end();
         wid.end();
         MonthGUI {
             wid: wid,
-            month: date.month(),
-            year: date.year(),
+            month: month,
+            year: year,
             weeks: weeks
         }
     }
@@ -81,12 +100,18 @@ struct MonthButton {
 }
 
 impl MonthButton {
-    fn new(b_type: MonthButtonType) -> Self {
+    fn new(b_type: MonthButtonType, s: Sender<Message>) -> Self {
         let arrow;
+
+        let mut wid = Button::default();
 
         match b_type {
             MonthButtonType::Next => {
                 arrow = '\u{27A1}';
+                wid.set_callback(move |but| {
+                    s.send(Message::NextMonth);
+                    but.parent().unwrap().do_callback();
+                });
             }
             MonthButtonType::Previous => {
                 arrow = '\u{2B05}';
@@ -94,9 +119,10 @@ impl MonthButton {
         }
 
         let label= format!("{}", arrow);
+        wid.set_label(label.as_str());
 
         MonthButton {
-            wid: Button::default().with_label(label.as_str()),
+            wid: wid,
             b_type: b_type
         }
     }
