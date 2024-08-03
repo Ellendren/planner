@@ -46,7 +46,7 @@ impl Week {
         new_week
     } 
 
-    pub fn add(mut self, col_id: &mut Flex) {
+    pub fn add(&mut self, col_id: &mut Flex) {
         col_id.fixed(&self.wid, 100);
 
         let mut curr_weekday_date = self.start_date;
@@ -74,6 +74,22 @@ impl Week {
         self.wid.end()
     }
 
+    pub fn change_week(&mut self, start_date: Date) -> &Self{
+        self.start_date = start_date;
+
+        let mut curr_day = self.start_date;
+        for (i, day) in self.days_in_week.iter().enumerate() {
+            if *day == curr_day.weekday() && self.start_date.month() == curr_day.month(){
+                self.days[i].update_day(curr_day);
+                curr_day = curr_day.next_day().unwrap();
+            }
+            else {
+                self.days[i].update_day_blank(curr_day);
+            }
+        }
+
+        self
+    }
 
 }
 

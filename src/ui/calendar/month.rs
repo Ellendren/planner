@@ -27,11 +27,12 @@ impl MonthGUI {
         let date = OffsetDateTime::now_local().unwrap();
 
         //fill the weeks in the month
-        let weeks = Vec::new();
+        let mut weeks = Vec::new();
         let mut day = Date::from_calendar_date(date.year(), date.month(), 1).unwrap();
         while day.month() == date.month() && day.year() == date.year() {
-            let week = week::Week::new(day);
+            let mut week = week::Week::new(day);
             week.add(&mut wid);
+            weeks.push(week);
             
             // advance to next week
 
@@ -40,6 +41,16 @@ impl MonthGUI {
                 day.weekday() != Weekday::Sunday
             } {}
         }
+        //!!!!!!!!!! guide for next prev buttons
+        // let mut day = Date::from_calendar_date(date.year(), date.month().next(), 1).unwrap();
+        // for week in weeks.iter_mut() {
+        //     week.change_week(day);
+
+        //     /*do*/ while {
+        //         day = day.next_day().unwrap();
+        //         day.weekday() != Weekday::Sunday
+        //     } {}
+        // }
         wid.begin();
         let mut row = Flex::default().row();
         let prev_btn = MonthButton::new(MonthButtonType::Previous);

@@ -1,10 +1,9 @@
 use fltk::{
-    button::Button,
-    enums::*,
-    prelude::*
+    button::Button, enums::*, macros::widget, prelude::*, widget_extends
 };
 use time::Date;
 use crate::calendar::day::Day;
+
 
 pub struct DayButton {
     wid: Button,
@@ -38,4 +37,27 @@ impl DayButton {
             day: day
         }
     }
+
+    pub fn update_day(&self, date: Date) -> Self {
+        let day = Day::new(date, Vec::new());
+        let wid = self.wid.clone();
+        println!("{:?}", day);
+
+        DayButton {
+            wid: wid.with_label(day.date().as_str()),
+            day: day
+        }
+    }
+
+    pub fn update_day_blank(&self, date: Date) -> Self {
+        let day = Day::new(date, Vec::new());
+        let wid = self.wid.clone();
+
+        DayButton {
+            wid: wid.with_label(""),
+            day: day
+        }
+    }
 }
+
+widget_extends!(DayButton, Button, wid);
