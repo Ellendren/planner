@@ -1,7 +1,14 @@
-use std::{borrow::BorrowMut, rc::Rc};
+use std::rc::Rc;
 use std::cell::RefCell;
 use fltk::{
-    app::{self, Sender}, button::Button, enums::*, group::Flex, prelude::*, widget_extends
+    app::{self, Sender},
+    button::Button, 
+    enums::*, 
+    menu::Choice,
+    frame::Frame, 
+    group::Flex, 
+    prelude::*,
+    widget_extends
 };
 use time::{
     Date, 
@@ -17,9 +24,7 @@ enum Message {
 }
 
 pub struct MonthGUI {
-    wid: Flex,
-    month: Rc<RefCell<Month>>,
-    year: Rc<RefCell<i32>>
+    wid: Flex
 }
 
 impl MonthGUI {
@@ -44,11 +49,11 @@ impl MonthGUI {
             } {}
         }
 
-        let month = Rc::from(RefCell::from(date.month()));
         let year = Rc::from(RefCell::from(date.year()));
+        let month = Rc::from(RefCell::from(date.month()));
 
         let month_cb = month.clone();
-        let year_cb = year.clone();
+        let year_cb= year.clone();
         let (s, r) = app::channel::<Message>();
         wid.set_callback(move |wid| {
             // let weeks = weeks_cb.borrow_mut();
@@ -102,12 +107,21 @@ impl MonthGUI {
         let next_btn = MonthButton::new(MonthButtonType::Next, s.clone());
         row.fixed(&prev_btn.wid, 100);
         row.fixed(&next_btn.wid, 100);
+
+        let mut space = Frame::default();
+        space.set_color(Color::from_rgb(100, 80, 100));
+        space.set_frame(FrameType::BorderBox);
+        row.fixed(&space, 550);
+
+        let month_choice = MonthChoice::new(ChoiceType::Month(*month.borrow()));
+        row.fixed(&month_choice.wid, 100);
+        let year_choice = MonthChoice::new(ChoiceType::Year(*year.borrow()));
+        row.fixed(&year_choice.wid, 100);
+
         row.end();
         wid.end();
         MonthGUI {
-            wid: wid,
-            month: month,
-            year: year,
+            wid: wid
         }
     }
 }
@@ -158,3 +172,47 @@ impl MonthButton {
 }
 
 widget_extends!(MonthButton, Button, wid);
+
+//choice for month
+enum ChoiceType {
+    Year(i32),
+    Month(Month)
+}
+
+struct MonthChoice {
+    wid: Choice
+}
+
+impl MonthChoice {
+    fn new(c_type: ChoiceType) -> Self {
+        let mut choice = Choice::default();
+
+        match c_type {
+            ChoiceType::Year(cur_year) => {
+                let year_range = 25;
+                let year_first = cur_year - year_range;
+                let year_last = cur_year + year_range;
+
+                for y in year_first..year_last {
+                    choice.add_choice(&y.to_string());
+                }
+                choice.set_value(year_range);
+            }
+            ChoiceType::Month(curr_month) => {
+                let mut m = Month::January;
+                while m != Month::December {
+                    let m_str = m.to_string();
+                    choice.add_choice(&m_str);
+                    m = m.next();
+                }
+                choice.set_value(curr_month as i32);
+            }
+        }
+
+        MonthChoice {
+            wid: choice
+        }
+    }
+}
+
+widget_extends!(MonthChoice, Choice, wid);
