@@ -1,4 +1,4 @@
-use std::rc::Rc;
+use std::{any::Any, rc::Rc};
 use std::cell::RefCell;
 use fltk::{
     app::{self, Sender},
@@ -49,12 +49,34 @@ impl MonthGUI {
             } {}
         }
 
-        let year = Rc::from(RefCell::from(date.year()));
-        let month = Rc::from(RefCell::from(date.month()));
-
-        let month_cb = month.clone();
-        let year_cb= year.clone();
+        
         let (s, r) = app::channel::<Message>();
+        wid.begin();
+        let mut row = Flex::default().row();
+        row.set_callback(|row| {
+            row.parent().unwrap().do_callback();
+        });
+        let prev_btn = MonthButton::new(MonthButtonType::Previous, s.clone());
+        let next_btn = MonthButton::new(MonthButtonType::Next, s.clone());
+        row.fixed(&prev_btn.wid, 100);
+        row.fixed(&next_btn.wid, 100);
+
+        let mut space = Frame::default();
+        space.set_color(Color::from_rgb(100, 80, 100));
+        space.set_frame(FrameType::BorderBox);
+        row.fixed(&space, 550);
+
+        let mut month_choice = MonthChoice::new(ChoiceType::Month(date.month()));
+        row.fixed(&month_choice.wid, 100);
+
+        let mut year_choice = MonthChoice::new(ChoiceType::Year(date.year()));
+        row.fixed(&year_choice.wid, 100);
+
+        row.end();
+        wid.end();
+
+        let year_cb = Rc::from(RefCell::from(date.year()));
+        let month_cb = Rc::from(RefCell::from(date.month()));
         wid.set_callback(move |wid| {
             // let weeks = weeks_cb.borrow_mut();
             let mut new_month = *month_cb.borrow();
@@ -68,17 +90,21 @@ impl MonthGUI {
                         Message::NextMonth => {
                             new_month = new_month.next();
                             month_cb.swap(&RefCell::from(new_month));
+                            month_choice.change(ChoiceType::Month(new_month));
                             if new_month == Month::January {
                                 new_year = new_year+1;
                                 year_cb.swap(&RefCell::from(new_year)); 
+                                year_choice.change(ChoiceType::Year(new_year));
                             }
                         }
                         Message::PrevMonth => {
                             new_month = new_month.previous();
                             month_cb.swap(&RefCell::from(new_month));
+                            month_choice.change(ChoiceType::Month(new_month));
                             if new_month == Month::December {
                                 new_year = new_year-1;
                                 year_cb.swap(&RefCell::from(new_year)); 
+                                year_choice.change(ChoiceType::Year(new_year));
                             }
                         }
                     }
@@ -98,32 +124,11 @@ impl MonthGUI {
             }
         });
 
-        wid.begin();
-        let mut row = Flex::default().row();
-        row.set_callback(|row| {
-            row.parent().unwrap().do_callback();
-        });
-        let prev_btn = MonthButton::new(MonthButtonType::Previous, s.clone());
-        let next_btn = MonthButton::new(MonthButtonType::Next, s.clone());
-        row.fixed(&prev_btn.wid, 100);
-        row.fixed(&next_btn.wid, 100);
-
-        let mut space = Frame::default();
-        space.set_color(Color::from_rgb(100, 80, 100));
-        space.set_frame(FrameType::BorderBox);
-        row.fixed(&space, 550);
-
-        let month_choice = MonthChoice::new(ChoiceType::Month(*month.borrow()));
-        row.fixed(&month_choice.wid, 100);
-        let year_choice = MonthChoice::new(ChoiceType::Year(*year.borrow()));
-        row.fixed(&year_choice.wid, 100);
-
-        row.end();
-        wid.end();
         MonthGUI {
             wid: wid
         }
     }
+    
 }
 
 widget_extends!(MonthGUI, Flex, wid);
@@ -174,13 +179,15 @@ impl MonthButton {
 widget_extends!(MonthButton, Button, wid);
 
 //choice for month
+#[derive(Debug, PartialEq)]
 enum ChoiceType {
     Year(i32),
     Month(Month)
 }
 
 struct MonthChoice {
-    wid: Choice
+    wid: Choice,
+    c_type: ChoiceType
 }
 
 impl MonthChoice {
@@ -200,17 +207,34 @@ impl MonthChoice {
             }
             ChoiceType::Month(curr_month) => {
                 let mut m = Month::January;
-                while m != Month::December {
+                /*do*/ while {
                     let m_str = m.to_string();
                     choice.add_choice(&m_str);
                     m = m.next();
-                }
-                choice.set_value(curr_month as i32);
+                    m != Month::January
+                } {}
+                choice.set_value((curr_month as i32)-1);
             }
         }
 
         MonthChoice {
-            wid: choice
+            wid: choice,
+            c_type: c_type
+        }
+    }
+
+    fn change(&mut self, c_type: ChoiceType) {
+        // make sure types match
+        match c_type {
+            ChoiceType::Month(m) => {
+                assert_eq!(c_type.type_id(), self.c_type.type_id());
+                self.set_value((m as i32) - 1);
+            }
+            ChoiceType::Year(y) => {
+                assert_eq!(c_type.type_id(), self.c_type.type_id());
+                println!("{}", y);
+                self.set_value(y);
+            }
         }
     }
 }
