@@ -232,8 +232,12 @@ impl MonthChoice {
             }
             ChoiceType::Year(y) => {
                 assert_eq!(c_type.type_id(), self.c_type.type_id());
-                println!("{}", y);
-                self.set_value(y);
+                match self.find_item(&y.to_string()){
+                    Some(menu_item) => {
+                        self.set_item(&menu_item);
+                    }
+                    None => {}
+                };
             }
         }
     }
