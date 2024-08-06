@@ -11,10 +11,12 @@ use fltk::{
     }, widget_extends
 };
 use crate::{calendar, ui::calendar::Calendar};
+use crate::ui::events::Events;
 
 pub struct PlannerTab {
     wid: Tabs,
     calendar: Calendar,
+    events: Events
 }
 
 impl PlannerTab {
@@ -24,12 +26,14 @@ impl PlannerTab {
         let mut tab = PlannerTab {
             wid,
             calendar: Calendar::new(),
+            events: Events::new()
         };
         
         tab.calendar.show_month();
+        tab.events.list();
 
-        tab.wid.end();
-        tab.wid.auto_layout();
+        tab.end();
+        tab.auto_layout();
 
         tab
     }

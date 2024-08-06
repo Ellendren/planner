@@ -1,4 +1,5 @@
 pub mod day;
+pub mod day_popup;
 pub mod week_label;
 pub mod week;
 pub mod week_days;
@@ -22,10 +23,12 @@ impl Calendar {
 
         let cal = Calendar {
             wid: Flex::default()
-                .with_label(format!("{label}\t").as_str())
+                .with_label(format!("{label}").as_str())
                 .row(),
             label: label.to_string()
         };
+
+        cal.end();
 
         cal
     }
@@ -35,12 +38,15 @@ impl Calendar {
     }
 
     pub fn show_month(&mut self) {
+        self.begin();
+
         let mut col = CalendarCol::default_col();
         self.fixed(&col.wid, 1000);
 
         week_label::week_label(&mut col.wid);
 
         let month = month::MonthGUI::default(col.wid);
+        self.end();
     }
 }
 

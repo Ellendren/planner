@@ -81,6 +81,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "fltk-table"
+version = "0.3.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "04b5d7b5202286aad57affdda49ff7d5bfcbf7eba6b76a41b5c6880c394f02f7"
+dependencies = [
+ "fltk",
+]
+
+[[package]]
 name = "lazy_static"
 version = "1.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -125,6 +134,7 @@ version = "0.1.0"
 dependencies = [
  "colored",
  "fltk",
+ "fltk-table",
  "time",
 ]
 

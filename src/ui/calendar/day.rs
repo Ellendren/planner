@@ -1,8 +1,12 @@
 use fltk::{
-    button::Button, enums::*, macros::widget, prelude::*, widget_extends
+    button::Button, 
+    enums::*, 
+    prelude::*, 
+    widget_extends
 };
 use time::Date;
 use crate::calendar::day::Day;
+use crate::ui::calendar::day_popup;
 
 
 pub struct DayButton {
@@ -23,10 +27,12 @@ impl DayButton {
     pub fn new(date: Date) -> Self {
         let day = Day::new(date, Vec::new());
 
-        DayButton {
+        let day_button = DayButton {
             wid: Button::default().with_label(&day.date()),
             day: day
-        }
+        };
+
+        day_button.callback()
     }
 
     pub fn new_blank(date: Date) -> Self {
@@ -36,6 +42,15 @@ impl DayButton {
             wid: Button::default(),
             day: day
         }
+    }
+
+    fn callback(mut self) -> Self{
+        let day = self.day.date().clone();
+        self.set_callback(move |d| {
+            day_popup::DayPopup::new(&day);
+        });
+
+        self
     }
 
     pub fn update_day(&self, date: Date) -> Self {
