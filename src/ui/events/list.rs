@@ -7,10 +7,6 @@ use fltk::{
 };
 use fltk_table::{SmartTable, TableOpts};
 
-use crate::ui::events::list_item;
-
-use super::list_item::ListItem;
-
 pub struct EventList {
     wid: SmartTable,
     // events:
